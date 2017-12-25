@@ -147,27 +147,20 @@ function getCryptoList() {
 /*
 * Returns help text
 * */
-function getHelpText(command) {
-  if (command === 'crypto') {
-    return '*Usage:*\n' +
-                '/crypto <amount> <from> to <to>\n' +
-                '/crypto';
-  }
 
-  if (command === 'notify') {
-    return `${'*Usage:*\n' +
-                '/notify <crypto> <comparator><amount> <currency>\n' +
-                '/notify clear\n' +
-                '/notify\n\n' +
-                '*Example:* /notify btc >150 eur\n\n'}${
-      getNotifications()}`;
-  }
-
-  return '*Commands*' +
-    '```\n/help [command]\n' +
-    '/crypto\n' +
-    '/notify```';
-}
+const helpText = {
+  help: '*Commands*' +
+  '```\n/help [command]\n' +
+  '/crypto\n' +
+  '/notify```',
+  crypto: '*Usage:*\ncrypto <amount> <from> to <to>\n/crypto',
+  notify: `${'*Usage:*\n' +
+  '/notify <crypto> <comparator><amount> <currency>\n' +
+  '/notify clear\n' +
+  '/notify\n\n' +
+  '*Example:* /notify btc >150 eur\n\n'}${
+    getNotifications()}`,
+};
 
 /*
 * Check if variable is int or float
@@ -190,10 +183,9 @@ bot.command('help')
     const { args } = ctx.command;
 
     if (args.length === 0) {
-      ctx.sendMessage(getHelpText('help'), messageOptions);
-    }
-    if (args.length === 1) {
-      const text = getHelpText(args[0]);
+      ctx.sendMessage(helpText.help, messageOptions);
+    } else if (args.length === 1) {
+      const text = helpText[args[0]];
 
       if (text) {
         ctx.sendMessage(text, messageOptions);
@@ -312,7 +304,7 @@ bot.command('notify')
         notifications = [];
         ctx.sendMessage('Cleared notifying list!', messageOptions);
       } else {
-        ctx.sendMessage(getHelpText('notify'), messageOptions);
+        ctx.sendMessage(helpText.notify, messageOptions);
       }
 
     // Example: /notify btc >15000 eur
@@ -345,9 +337,9 @@ bot.command('notify')
         ctx.sendMessage(`Added new notification!\n\n${
           getNotifications(chatId)}`, messageOptions);
       } else {
-        ctx.sendMessage(getHelpText('notify'), messageOptions);
+        ctx.sendMessage(helpText.notify, messageOptions);
       }
     } else {
-      ctx.sendMessage(getHelpText('notify'), messageOptions);
+      ctx.sendMessage(helpText.notify, messageOptions);
     }
   });

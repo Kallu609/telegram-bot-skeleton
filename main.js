@@ -51,6 +51,19 @@ function buildApiUrl(fromCurrency, toCurrency) {
 }
 
 /*
+* Send notification message
+*/
+function showNotification(notification, currentRate) {
+  const overOrUnder = (notification.comparator === '>') ? 'over' : 'under';
+
+  notification.ctx.sendMessage(
+    `*1 ${notification.crypto}* is now ${overOrUnder} *${notification.rate} ${notification.currency}*\n\n` +
+      `*1 ${notification.crypto}:* ${currentRate} ${notification.currency}`,
+    messageOptions,
+  );
+}
+
+/*
 * Returns a string containing all current notifications
 */
 function getNotifications(chatId) {
@@ -84,7 +97,7 @@ function checkNotifications() {
     const cryptosToFetch = [];
     const currenciesToFetch = [];
 
-    for (const chatId in notifications) {
+    Object.keys(notifications).forEach(function(chatId) {
       notifications[chatId].forEach((notification, index, object) => {
         if (!cryptosToFetch.includes(notification.crypto)) {
           cryptosToFetch.push(notification.crypto);
@@ -93,7 +106,7 @@ function checkNotifications() {
           currenciesToFetch.push(notification.currency);
         }
       });
-    }
+    });
 
     return axios
       .get(buildApiUrl(cryptosToFetch, currenciesToFetch))
@@ -101,35 +114,35 @@ function checkNotifications() {
         const { data } = response;
 
         // Loop through each chat
-        for (const chatId in notifications) {
-          // Loop through each notification
-          notifications[chatId].forEach((notification, index, object) => {
-            // Get current rate of crypto
-            const currentRate = data[notification.crypto][
-              notification.currency
-            ].toFixed(2);
+        Object.keys(notifications).forEach(function(chatId) {
+            // Loop through each notification
+            notifications[chatId].forEach((notification, index, object) => {
+              // Get current rate of crypto
+              const currentRate = data[notification.crypto][
+                notification.currency
+              ].toFixed(2);
 
-            // Check if current rate is over / under the notification rate
-            if (notification.comparator === '>') {
-              if (notification.rate < currentRate) {
-                // Show notification and remove it
-                showNotification(notification, currentRate);
-                object.splice(index, 1);
+              // Check if current rate is over / under the notification rate
+              if (notification.comparator === '>') {
+                if (notification.rate < currentRate) {
+                  // Show notification and remove it
+                  showNotification(notification, currentRate);
+                  object.splice(index, 1);
+                }
+              } else if (notification.comparator === '<') {
+                if (notification.rate > currentRate) {
+                  // Show notification and remove it
+                  showNotification(notification, currentRate);
+                  object.splice(index, 1);
+                }
               }
-            } else if (notification.comparator === '<') {
-              if (notification.rate > currentRate) {
-                // Show notification and remove it
-                showNotification(notification, currentRate);
-                object.splice(index, 1);
-              }
-            }
+            });
           });
-        }
-      })
+        })
       .catch((error) => {
         console.log(error);
       });
-  }
+
   return Promise.resolve();
 }
 
@@ -157,7 +170,6 @@ function getCryptoList() {
 /*
 * Returns help text
 * */
-
 const helpText = {
   help: '*Commands*' + '```\n/help [command]\n' + '/crypto\n' + '/notify```',
   crypto: '*Usage:*\ncrypto <amount> <from> to <to>\n/crypto',
@@ -179,9 +191,7 @@ function isNumber(num) {
 * Returns at least 2 decimal points, more if needed
 */
 function twoDecimals(num) {
-  result = num.toFixed(
-    Math.max(2, (num.toString().split('.')[1] || []).length),
-  );
+  result = num.toFixed(Math.max(2, (num.toString().split('.')[1] || []).length));
   return result;
 }
 
@@ -192,7 +202,9 @@ bot.command('debug').invoke(() => {
   console.log(Object.keys(cryptoList));
 });
 
-// Show help
+/*
+* Help command
+*/
 bot.command('help').invoke((ctx) => {
   const { args } = ctx.command;
 
@@ -216,9 +228,7 @@ bot.command('crypto').invoke((ctx) => {
   ctx.go('c');
 });
 
-bot
-  .command('c')
-  .use('before', (ctx) => {
+bot.command('c').use('before', (ctx) => {
     const { args } = ctx.command;
     ctx.crypto = null;
     ctx.error = [];
@@ -306,15 +316,14 @@ bot
       const fromAmount = args[0];
       const fromCurrency = args[1].toUpperCase();
       const toCurrency = args[3].toUpperCase();
-      const finalValue = twoDecimals(
-        fromAmount * ctx.crypto[fromCurrency][toCurrency],
-      );
+      const finalValue = twoDecimals(fromAmount * ctx.crypto[fromCurrency][toCurrency]);
 
       result = `*${fromAmount} ${fromCurrency}* to *${toCurrency}*: \`${finalValue}\``;
     }
 
     ctx.sendMessage(result, messageOptions);
-  });
+});
+
 
 /*
 * Notify command

@@ -1,27 +1,27 @@
-const keys = require("./config");
-const bb = require("bot-brother");
-const axios = require("axios");
-const interval = require("interval-promise");
+const keys = require('./config');
+const bb = require('bot-brother');
+const axios = require('axios');
+const interval = require('interval-promise');
 
 // Create bot object
 const bot = bb({
   key: keys.telegram,
   sessionManager: bb.sessionManager.memory(),
-  polling: { interval: 0, timeout: 1 }
+  polling: { interval: 0, timeout: 1 },
 });
 
 // List of supported currencies throughout the app
-const supportedCurrencies = ["USD", "EUR", "GBP"];
+const supportedCurrencies = ['USD', 'EUR', 'GBP'];
 let supportedAll; // cryptoList.concat(supportedCurrencies);
 
 // This is for /crypto command
-const cryptosToShow = ["BTC", "ETH", "BCH"];
-const currenciesToShow = ["EUR", "USD"];
+const cryptosToShow = ['BTC', 'ETH', 'BCH'];
+const currenciesToShow = ['EUR', 'USD'];
 
 // Build API url
 const apiUrls = {
-  price: "https://min-api.cryptocompare.com/data/pricemulti",
-  coinlist: "https://min-api.cryptocompare.com/data/all/coinlist"
+  price: 'https://min-api.cryptocompare.com/data/pricemulti',
+  coinlist: 'https://min-api.cryptocompare.com/data/all/coinlist',
 };
 
 // List of cryptos, this is fetched by getCryptoList() on start up
@@ -30,9 +30,9 @@ getCryptoList();
 
 // Default message options
 const messageOptions = {
-  parse_mode: "Markdown",
+  parse_mode: 'Markdown',
   disable_notification: true,
-  reply_markup: {}
+  reply_markup: {},
 };
 
 // Build notification array
@@ -44,9 +44,9 @@ let notifications = {};
 */
 function buildApiUrl(fromCurrency, toCurrency) {
   const from = Array.isArray(fromCurrency)
-    ? fromCurrency.join(",")
+    ? fromCurrency.join(',')
     : fromCurrency;
-  const to = Array.isArray(toCurrency) ? toCurrency.join(",") : toCurrency;
+  const to = Array.isArray(toCurrency) ? toCurrency.join(',') : toCurrency;
   return `${apiUrls.price}?fsyms=${from}&tsyms=${to}`;
 }
 
@@ -54,15 +54,15 @@ function buildApiUrl(fromCurrency, toCurrency) {
 * Returns a string containing all current notifications
 */
 function getNotifications(chatId) {
-  let currentlyNotifying = "*Currently notifying when:*\n";
+  let currentlyNotifying = '*Currently notifying when:*\n';
 
   // No notifications for current chat
   if (notifications[chatId] === undefined) {
-    currentlyNotifying += "Never";
+    currentlyNotifying += 'Never';
 
     // Chat has notifications
   } else if (notifications[chatId].length > 0) {
-    notifications[chatId].forEach(notification => {
+    notifications[chatId].forEach((notification) => {
       currentlyNotifying += `${notification.crypto} ${notification.comparator}${
         notification.rate
       } ${notification.currency}\n`;
@@ -97,7 +97,7 @@ function checkNotifications() {
 
     return axios
       .get(buildApiUrl(cryptosToFetch, currenciesToFetch))
-      .then(response => {
+      .then((response) => {
         const { data } = response;
 
         // Loop through each chat
@@ -110,13 +110,13 @@ function checkNotifications() {
             ].toFixed(2);
 
             // Check if current rate is over / under the notification rate
-            if (notification.comparator === ">") {
+            if (notification.comparator === '>') {
               if (notification.rate < currentRate) {
                 // Show notification and remove it
                 showNotification(notification, currentRate);
                 object.splice(index, 1);
               }
-            } else if (notification.comparator === "<") {
+            } else if (notification.comparator === '<') {
               if (notification.rate > currentRate) {
                 // Show notification and remove it
                 showNotification(notification, currentRate);
@@ -126,7 +126,7 @@ function checkNotifications() {
           });
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
       });
   }
@@ -145,11 +145,11 @@ interval(async () => {
 function getCryptoList() {
   axios
     .get(apiUrls.coinlist)
-    .then(response => {
+    .then((response) => {
       cryptoList = Object.keys(response.data.Data);
       supportedAll = cryptoList.concat(supportedCurrencies);
     })
-    .catch(error => {
+    .catch((error) => {
       console.log(error);
     });
 }
@@ -159,13 +159,13 @@ function getCryptoList() {
 * */
 
 const helpText = {
-  help: "*Commands*" + "```\n/help [command]\n" + "/crypto\n" + "/notify```",
-  crypto: "*Usage:*\ncrypto <amount> <from> to <to>\n/crypto",
-  notify: `${"*Usage:*\n" +
-    "/notify <crypto> <comparator><amount> <currency>\n" +
-    "/notify clear\n" +
-    "/notify\n\n" +
-    "*Example:* /notify btc >150 eur\n\n"}${getNotifications()}`
+  help: '*Commands*' + '```\n/help [command]\n' + '/crypto\n' + '/notify```',
+  crypto: '*Usage:*\ncrypto <amount> <from> to <to>\n/crypto',
+  notify: `${'*Usage:*\n' +
+    '/notify <crypto> <comparator><amount> <currency>\n' +
+    '/notify clear\n' +
+    '/notify\n\n' +
+    '*Example:* /notify btc >150 eur\n\n'}${getNotifications()}`,
 };
 
 /*
@@ -180,7 +180,7 @@ function isNumber(num) {
 */
 function twoDecimals(num) {
   result = num.toFixed(
-    Math.max(2, (num.toString().split(".")[1] || []).length)
+    Math.max(2, (num.toString().split('.')[1] || []).length),
   );
   return result;
 }
@@ -188,12 +188,12 @@ function twoDecimals(num) {
 /*
 * Simple debug command
 */
-bot.command("debug").invoke(() => {
+bot.command('debug').invoke(() => {
   console.log(Object.keys(cryptoList));
 });
 
 // Show help
-bot.command("help").invoke(ctx => {
+bot.command('help').invoke((ctx) => {
   const { args } = ctx.command;
 
   if (args.length === 0) {
@@ -204,7 +204,7 @@ bot.command("help").invoke(ctx => {
     if (text) {
       ctx.sendMessage(text, messageOptions);
     } else {
-      ctx.sendMessage("`Command not found`", messageOptions);
+      ctx.sendMessage('`Command not found`', messageOptions);
     }
   }
 });
@@ -212,13 +212,13 @@ bot.command("help").invoke(ctx => {
 /*
 * Crypto command
 */
-bot.command("crypto").invoke(ctx => {
-  ctx.go("c");
+bot.command('crypto').invoke((ctx) => {
+  ctx.go('c');
 });
 
 bot
-  .command("c")
-  .use("before", ctx => {
+  .command('c')
+  .use('before', (ctx) => {
     const { args } = ctx.command;
     ctx.crypto = null;
     ctx.error = [];
@@ -235,7 +235,7 @@ bot
         cryptos = crypto;
       } else {
         // Throw error
-        ctx.error.push("Crypto not found or supported");
+        ctx.error.push('Crypto not found or supported');
       }
     } else if (args.length >= 3) {
       // Example: /c 1 btc (to) eur
@@ -245,8 +245,9 @@ bot
       if (!isNumber(args[0])) {
         ctx.error.push("First argument isn't a number");
       }
+
       if (!supportedAll.includes(cryptos) || !supportedAll.includes(toShow)) {
-        ctx.error.push("Crypto(s) not found or supported");
+        ctx.error.push('Crypto(s) not found or supported');
       }
     }
 
@@ -254,19 +255,19 @@ bot
       // If no errors
       return axios
         .get(buildApiUrl(cryptos, toShow))
-        .then(response => {
+        .then((response) => {
           ctx.crypto = response.data;
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
         });
     }
     return Promise.resolve();
   })
-  .invoke(ctx => {
+  .invoke((ctx) => {
     // Error handling
     if (ctx.error.length > 0) {
-      ctx.sendMessage(ctx.error.join("! "), messageOptions);
+      ctx.sendMessage(ctx.error.join('! '), messageOptions);
       console.log(ctx.error);
 
       ctx.error = []; // Empty the error log
@@ -279,27 +280,26 @@ bot
     }
 
     const { args } = ctx.command;
-    let result = "";
+    let result = '';
 
     // Example: /c
     if (args.length === 0) {
-      cryptosToShow.forEach(crypto => {
-        currenciesToShow.forEach(currency => {
+      cryptosToShow.forEach((crypto) => {
+        currenciesToShow.forEach((currency) => {
           const finalValue = ctx.crypto[crypto][currency].toFixed(2);
 
           result += `*1 ${crypto}* to *${currency}*: \`${finalValue}\`\n`;
         });
 
-        result += "\n";
+        result += '\n';
       });
     } else if (args.length === 1) {
       // Example: /c btc
       const crypto = args[0].toUpperCase();
+      const finalValue = ctx.crypto[crypto][currency].toFixed(2);
 
-      currenciesToShow.forEach(currency => {
-        result += `*1 ${crypto}* to *${currency}*: \`${ctx.crypto[crypto][
-          currency
-        ].toFixed(2)}\`\n`;
+      currenciesToShow.forEach((currency) => {
+        result += `*1 ${crypto}* to *${currency}*: \`${finalValue}\`\n`;
       });
     } else if (args.length >= 3) {
       // Example: /c 1 btc (to) eur
@@ -307,7 +307,7 @@ bot
       const fromCurrency = args[1].toUpperCase();
       const toCurrency = args[3].toUpperCase();
       const finalValue = twoDecimals(
-        fromAmount * ctx.crypto[fromCurrency][toCurrency]
+        fromAmount * ctx.crypto[fromCurrency][toCurrency],
       );
 
       result = `*${fromAmount} ${fromCurrency}* to *${toCurrency}*: \`${finalValue}\``;
@@ -319,7 +319,7 @@ bot
 /*
 * Notify command
 */
-bot.command("notify").invoke(ctx => {
+bot.command('notify').invoke((ctx) => {
   const { args } = ctx.command;
   const chatId = ctx.message.chat.id;
 
@@ -327,9 +327,9 @@ bot.command("notify").invoke(ctx => {
   if (args.length === 0) {
     ctx.sendMessage(getNotifications(chatId), messageOptions);
   } else if (args.length === 1) {
-    if (args[0] === "clear") {
+    if (args[0] === 'clear') {
       notifications = [];
-      ctx.sendMessage("Cleared notifying list!", messageOptions);
+      ctx.sendMessage('Cleared notifying list!', messageOptions);
     } else {
       ctx.sendMessage(helpText.notify, messageOptions);
     }
@@ -343,7 +343,7 @@ bot.command("notify").invoke(ctx => {
 
     // Add new notification if values are valid
     if (
-      [">", "<"].includes(comparator) &&
+      ['>', '<'].includes(comparator) &&
       cryptoList.includes(crypto) &&
       supportedCurrencies.includes(currency) &&
       isNumber(rate)
@@ -365,7 +365,7 @@ bot.command("notify").invoke(ctx => {
 
       ctx.sendMessage(
         `Added new notification!\n\n${getNotifications(chatId)}`,
-        messageOptions
+        messageOptions,
       );
     } else {
       ctx.sendMessage(helpText.notify, messageOptions);

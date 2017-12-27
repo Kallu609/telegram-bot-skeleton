@@ -4,10 +4,9 @@ import Help from './commands/Help';
 import * as helper from './helpers/helper';
 import * as launcher from './app';
 
-// Startup tasks
+// Tasks before launching the bot
 export const startupTasks : Promise<any>[] = [
   helper.fetchCrypto(),
-  launcher.app(),
 ];
 
 // Commands

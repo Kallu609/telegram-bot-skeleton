@@ -1,14 +1,13 @@
+import { data } from '../helpers/database';
 import Command from './Command';
 
 export default class implements Command {
-  command = /\/crypto(.+)?$/;
-  help = ['Displays various crypto currencies\' exchange rate'];
-  usage = ['/crypto\n/crypto <currency>\n/crypto <amount> <from> to <to>'];
-  output = [];
+  public command = /\/crypto(.+)?$/;
+  public help = ['Displays various crypto currencies\' exchange rate'];
+  public usage = ['/crypto', '/crypto <currency>', '/crypto <amount> <from> to <to>'];
+  public output = [];
 
-  exec(match: string, chatId: number) {
-    this.output.push(match);
-    this.output.push(this.help);
-    this.output.push(this.usage);
+  public exec(match: string, chatId: number) {
+    console.log(data.allCurrencies.length);
   }
 }

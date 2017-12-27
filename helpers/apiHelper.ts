@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { config } from '../config';
-import { data, Data, Cryptos } from './database';
+import { data, ICryptos, IData } from './database';
 
 /*
  * Builds API url
@@ -16,11 +16,12 @@ export function buildApiUrl (fromCurrency : string[] | string, toCurrency : stri
 /*
  * Returns all available cryptos from API
  */
-
 export function fetchCrypto(extraCurrencies : string[] = config.supportedCurrencies) : Promise<any> {
-  return getCryptoList(extraCurrencies).then((currencies : Cryptos) => {
+  return getCryptoList(extraCurrencies).then((currencies : ICryptos) => {
     Array.prototype.push.apply(data.cryptoCurrencies, currencies.cryptoCurrencies);
     Array.prototype.push.apply(data.allCurrencies, currencies.allCurrencies);
+
+    return Promise.resolve('Currencies are now in database');
   }).catch((error) => {
     console.log(error);
   });
@@ -30,11 +31,11 @@ function getCryptoList (database : string[], currencies : string[] = config.supp
   return axios.get(apiUrl)
   .then((response) => {
     if(!response.data.hasOwnProperty('Data')) {
-      throw 'Data not acquired';
+      throw new Error('Data not acquired');
     }
 
     return new Promise((resolve, reject) => {
-      const listOfCryptos : Data['cryptoCurrencies'] = Object.keys(response.data.Data);
+      const listOfCryptos : IData['cryptoCurrencies'] = Object.keys(response.data.Data);
 
       resolve({
         cryptoCurrencies : Object.keys(response.data.Data),
@@ -46,36 +47,5 @@ function getCryptoList (database : string[], currencies : string[] = config.supp
     console.log(error);
     
     return Promise.resolve();
-    // TODO: Try again in a while
   });
 }
-
-/*
- * * Handlers for database
- * 
- * These change the original array, not just copy it!
- *
- * Array.prototype.push.apply(data.notifications, Notification[])
- * data.notifications.push(Notification) 
- * data.notifications.remove('chatId', number)
- 
- * Array.prototype.push.apply(data.allcurrencies, string[])
- * data.allcurrencies.push(string)
- * data.allcurrencies.remove(string)
- * 
- */
-declare global {
-  interface Array<T> {
-    remove(key : any, value? : any) : number;
-  }
-}
-Array.prototype.remove = function (key : any, value : any = undefined) : number {
-  const i : number =
-    (value === undefined)
-    ? this.findIndex(chr => chr === key)
-    : this.findIndex(obj => obj[key] === value);
-
-  if (i >= 0) { this.splice(i, 1); }
-
-  return this.length;
-};

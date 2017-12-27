@@ -2,7 +2,7 @@
  * For commands,
  * refer to commandList.ts
  */
-export type Config = {
+export interface IConfig {
   telegramToken : string;
   apiUrl_price : string;
   apiUrl_coinlist : string;
@@ -10,12 +10,12 @@ export type Config = {
   supportedCurrencies : string[];
 };
 
-export const config : Config = {
+export const config : IConfig = {
 /*
  * Telegram bot token
  *  Can be acquired from BotFather
  */
-  telegramToken : '',
+  telegramToken : '479950408:AAEAnfw7wEkKmQRCCAEWWYdG4qLaGJPMNxo',
 
 /*
  * Api URL:s
@@ -29,7 +29,7 @@ export const config : Config = {
  *  https://core.telegram.org/bots/api#sendmessage
  */
   messageOptions : {
-    'parse_mode': 'Markdown'
+    'parse_mode': 'Markdown',
   },
 
 /*

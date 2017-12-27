@@ -1,12 +1,12 @@
+import * as launcher from './app';
 import Command from './commands/Command';
 import Crypto from './commands/Crypto';
 import Help from './commands/Help';
-import * as helper from './helpers/helper';
-import * as launcher from './app';
+import * as apiHelper from './helpers/apiHelper';
 
 // Tasks before launching the bot
-export const startupTasks : Promise<any>[] = [
-  helper.fetchCrypto(),
+export const startupTasks : Array<Promise<any>> = [
+  apiHelper.fetchCrypto(),
 ];
 
 // Commands

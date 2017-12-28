@@ -36,4 +36,4 @@ When you have finished creating your command, you can add it to `./command.ts` t
 
 ### Adding startup tasks
 
-Append the list in `./command.ts`´s `getStartupTasks()` with your function which returns a `Promise`.
+Append the list in `./command.ts`'s `getStartupTasks()` with your function which returns a `Promise`.

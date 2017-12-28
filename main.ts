@@ -5,9 +5,7 @@ import { IMatchesList, IMsg, IOutput } from './helpers/interface';
 
 // Startup
 Promise.all(getStartupTasks())
-.catch(error => {
-  console.log(config.consoleStyle, error);
-});
+.catch(errorHandling);
 
 console.log(config.consoleStyle, 'Initializing the bot');
 

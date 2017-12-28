@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { config } from '../config';
-import { buildApiUrl } from '../helpers/api';
+import { buildApiUrl, isNumber } from '../helpers/api';
 import { data } from '../helpers/database';
 import { ICommand } from '../helpers/interface';
 import * as messageHelper from '../helpers/message';
@@ -19,7 +19,7 @@ export default function(bot) : ICommand {
     handler: ({msg, matches}) => {
       // If cryptocurrencies aren't fetched
       if(data.cryptoCurrencies.length === 0 || data.allCurrencies.length === 0) {
-        console.log(config.consoleStyle, `Cryptocurrencies aren't fetched! Please visit your apiHelper file`);
+        messageHelper.errorHandling(`Cryptocurrencies aren't fetched! Please visit your apiHelper file`);
         return;
       }
 
@@ -29,7 +29,7 @@ export default function(bot) : ICommand {
       let cryptos : string[] = cryptosToShow;
       let toShow : string[] = currenciesToShow;
       let value : string = '1';
-      let message = '';
+      let message : string = '';
 
       // Example: /c BTC
       if (args.length === 1) {
@@ -88,8 +88,4 @@ function parseData(response, value : string = '1') : string {
   });
 
   return result;
-}
-
-function isNumber(num : any) : boolean {
-  return !Number.isNaN(num);
 }

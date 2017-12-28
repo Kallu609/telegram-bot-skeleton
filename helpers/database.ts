@@ -1,3 +1,5 @@
+import * as fs from 'file-system';
+
 /*
  * Datatypes
  */
@@ -9,6 +11,7 @@ export interface IData {
 
 export interface INotification {
   chatId : number;
+  userId : number;
   crypto : string;
   comparator : string;
   rate : number;
@@ -61,3 +64,19 @@ Array.prototype.remove = function (key : any, value : any = undefined) : number 
 
   return this.length;
 };
+
+export function writeData() : Promise<any> {
+  return new Promise((resolve, reject) => {
+    const jsondata : string = JSON.stringify(data.notifications);
+
+    fs.writeFile("./data/notifications.json", jsondata, (err) => {
+      if(err) {
+        reject(err);
+      }
+
+      resolve("The file was saved!");
+    });
+  }).catch(error => {
+    console.log(error);
+  });
+}

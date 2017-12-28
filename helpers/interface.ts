@@ -20,15 +20,6 @@ export interface IMsg {
   entities?: [{offset?: number, length?: number, type?: string }];
 };
 
-export interface IMatches {
-  message: string;
-  match: string;
-  index: number;
-  input: string;
-};
-
-export type IMatchesList = [IMatches];
-
 /* IOutput */
 export interface IOutput {
   regexp: RegExp;

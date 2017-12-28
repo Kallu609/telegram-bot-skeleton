@@ -5,7 +5,7 @@ import { ICommand } from './helpers/interface';
 import Crypto from './commands/Crypto';
 import Greeter from './commands/Greeter';
 import Help from './commands/Help';
-import Notify from './commands/Notify';
+import Notify, * as Notifier from './commands/Notify';
 
 // Commands
 export function getCommands(bot : TelegramBot) : ICommand[] {
@@ -18,8 +18,9 @@ export function getCommands(bot : TelegramBot) : ICommand[] {
 }
 
 // Promises executed while starting the bot
-export function getStartupTasks() : Array<Promise<any>> {
+export function getStartupTasks(bot : TelegramBot) : Array<Promise<any>> {
   return [
     apiHelper.fetchCrypto(),
+    Notifier.startNotifier(bot),
   ];
 }

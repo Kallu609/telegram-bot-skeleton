@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as interval from 'interval-promise';
 import { config } from '../config';
 import { data, ICryptos, IData } from './database';
+import { errorHandling } from './message';
 
 const apiConfig = {
   /*
@@ -54,12 +55,16 @@ function fetchCryptoes(iterationNumber : number, stop : () => void) : Promise<an
     Array.prototype.push.apply(data.allCurrencies, listOfCryptos.concat(apiConfig.supportedCurrencies));
 
     if(data.allCurrencies.length > 0) {
-      console.log(config.consoleStyle, `${data.allCurrencies.length} currencies fetched successfully`);
+      errorHandling(`${data.allCurrencies.length} currencies fetched successfully`);
 
       stop();
     }
   })
   .catch(error => {
-    console.log(config.consoleStyle, `Currencies couldn't be fetched! Try #${iterationNumber}`);
+    errorHandling(`Currencies couldn't be fetched! Try #${iterationNumber}`);
   });
+}
+
+export function isNumber(num : any) : boolean {
+  return !Number.isNaN(num);
 }

@@ -10,7 +10,7 @@ export function parseArgs(matches : any[]) : string[] {
   return array;
 }
 
-export function errorHandling(error : string) : void {
-  console.log(config.consoleStyle, error);  
+export function errorHandling(error) : void {
+  console.log(config.consoleStyle, error);
 }
   

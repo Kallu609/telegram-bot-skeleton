@@ -1,4 +1,5 @@
 import { getCommands } from '../command';
+import { config } from '../config';
 import { ICommand } from '../helpers/interface';
 import * as messageHelper from '../helpers/message';
 
@@ -15,7 +16,7 @@ export default function(bot) : ICommand {
         message += (`${command.usage} - ${command.help}\n`);
       }
 
-      bot.sendMessage(msg.chat.id, message);
+      bot.sendMessage(msg.chat.id, message, config.messageOptions);
     }
   }
 }

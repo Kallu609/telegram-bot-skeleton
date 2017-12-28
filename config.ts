@@ -1,6 +1,6 @@
 /*
  * For commands,
- * refer to commandList.ts
+ * refer to command.ts
  */
 
 export const config = {

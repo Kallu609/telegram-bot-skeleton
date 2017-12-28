@@ -1,25 +1,17 @@
-import { IConfig } from './helpers/interfaces';
 /*
  * For commands,
  * refer to commandList.ts
  */
 
-export const config : IConfig = {
+export const config = {
 /*
- * Telegram bot token
+ * Telegram bot token : string
  *  Can be acquired from BotFather
  */
   telegramToken : '',
 
 /*
- * Api URL:s
- *  Changing these values might require reworking the code
- */
-  apiUrl_price : 'https://min-api.cryptocompare.com/data/pricemulti',
-  apiUrl_coinlist : 'https://min-api.cryptocompare.com/data/all/coinlist',
-
-/*
- * Message options
+ * Message options : object
  *  https://core.telegram.org/bots/api#sendmessage
  */
   messageOptions : {
@@ -27,7 +19,7 @@ export const config : IConfig = {
   },
 
 /*
- * Supported Fiat-currencies
+ * console.log style where %s is the message
  */
-  supportedCurrencies : ['USD', 'EUR', 'GBP'],
+  consoleStyle : '\x1b[1mconsole.log.tuplabotti:\x1b[0m %s',
 };

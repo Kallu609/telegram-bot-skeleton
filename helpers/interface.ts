@@ -1,11 +1,3 @@
-export interface IConfig {
-  telegramToken : string;
-  apiUrl_price : string;
-  apiUrl_coinlist : string;
-  messageOptions : object;
-  supportedCurrencies : string[];
-};
-
 export interface IMsg {
   message_id: number;
   from?: {
@@ -37,18 +29,18 @@ export interface IMatches {
 
 export type IMatchesList = [IMatches];
 
-export interface IData {
-  message : IMsg,
-  matches : IMatchesList
-}
-
 /* IOutput */
 export interface IOutput {
   regexp: RegExp;
   help: string;
   usage: string;
   output: string;
-
-  // (message: IMsg, matches : IMatchesList): IOutput;
-  // (a: any, b: any, c?: string, d?: string): IOutput;
 };
+
+export interface ICommand {
+  regexp: RegExp;
+  help: string;
+  usage: string;
+
+  handler: (data: {msg: IMsg, matches: any[]}) => void;
+}

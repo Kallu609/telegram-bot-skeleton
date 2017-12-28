@@ -1,17 +1,22 @@
-import { IMatchesList, IMsg, IOutput } from '../helpers/interfaces';
+import { config } from '../config';
+import { ICommand } from '../helpers/interface';
+import * as messageHelper from '../helpers/message';
 
-export default function(message? : IMsg, matches? : IMatchesList) : IOutput {
-  const io : IOutput = {
+
+export default function(bot) : ICommand {
+  return {
     regexp: /\/greet$/,
-    help: 'Just say /greet',
-    usage: 'Just say /greet',
-    output: 'Hello',
-  };
+    help: 'Basic example command for demonstrating purposes',
+    usage: '/greet',
 
-  if(message.from.first_name !== undefined) {
-    io.output += message.from.first_name;
+    handler: ({msg, matches}) => { // Not necessary to include all parameters
+      const args = messageHelper.parseArgs(matches); // You can use messageHelper to parse arguments
+
+      bot.sendMessage(
+        msg.chat.id,
+        `Wassup ${msg.chat.first_name}!`,
+        config.messageOptions // You can pass messageOptions as a parameter
+      );
+    }
   }
-
-  return io;
 }
-

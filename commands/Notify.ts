@@ -1,16 +1,13 @@
-import { IMatchesList, IMsg, IOutput } from '../helpers/interfaces';
+import { ICommand } from '../helpers/interface';
 
-export default function Notify(message? : IMsg, matches? : IMatchesList) : IOutput {
-  const io = {
+export default function(bot) : ICommand {
+  return {
     regexp: /\/notify$/,
-    help: 'Notifys',
-    usage: 'Yes',
-    output: 'Hello',
-  };
+    help: 'needs to be implemented',
+    usage: '/notify',
 
-  if(message.from.first_name !== undefined) {
-    io.output += message.from.first_name;
+    handler: ({msg}) => {
+      bot.sendMessage(msg.chat.id, 'Wassup!');
+    }
   }
-
-  return io;
 }

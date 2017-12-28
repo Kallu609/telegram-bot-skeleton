@@ -1,15 +1,17 @@
-import Command from './Command';
+import { commandList } from '../commands';
+import { IMatchesList, IMsg, IOutput } from '../helpers/interfaces';
 
-export default class implements Command {
-  public command = /\/help$/;
-  public help = ["Displays a list of all available commands."];
-  public usage = ["/help\n/help <command>"];
-  public output = ['*The following commands are available:*', ''];
+export default function(message? : IMsg, matches? : IMatchesList) : IOutput {
+  const io : IOutput = {
+    regexp: /\/help$/,
+    help: 'Displays a list of all available commands.',
+    usage: '/help\n/help <command>',
+    output: '*The following commands are available:*\n',
+  };
 
-  constructor(commands : Command[]) {
-    for (const c of commands) {
-      this.output.push(`${c.joinUsage()} - ${c.joinHelp()}`);
-    }
+  for (const command of commandList) {
+    io.output += (`${command.usage} - ${command.help}\n`);
   }
-}
 
+  return io;
+}

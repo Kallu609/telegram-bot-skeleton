@@ -1,13 +1,12 @@
-import { data } from '../helpers/database';
-import Command from './Command';
+import { IMatchesList, IMsg, IOutput } from '../helpers/interfaces';
 
-export default class implements Command {
-  public command = /\/crypto(.+)?$/;
-  public help = ['Displays various crypto currencies\' exchange rate'];
-  public usage = ['/crypto', '/crypto <currency>', '/crypto <amount> <from> to <to>'];
-  public output = [];
+export default function(message? : IMsg, matches? : IMatchesList) : IOutput {
+  const io : IOutput = {
+    regexp: /\/crypto(.*)$/,
+    help: 'Displays various crypto currencies\' exchange rate',
+    usage: ['/crypto', '/crypto <currency>', '/crypto <amount> <from> to <to>'].join('\n'),
+    output: '',
+  };
 
-  public exec(match: string, chatId: number) {
-    console.log(data.allCurrencies.length);
-  }
+  return io;
 }

@@ -1,14 +1,8 @@
+import { IConfig } from './helpers/interfaces';
 /*
  * For commands,
  * refer to commandList.ts
  */
-export interface IConfig {
-  telegramToken : string;
-  apiUrl_price : string;
-  apiUrl_coinlist : string;
-  messageOptions : object;
-  supportedCurrencies : string[];
-};
 
 export const config : IConfig = {
 /*

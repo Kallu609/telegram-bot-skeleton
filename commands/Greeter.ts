@@ -1,10 +1,10 @@
 import { IMatchesList, IMsg, IOutput } from '../helpers/interfaces';
 
-export default function Notify(message? : IMsg, matches? : IMatchesList) : IOutput {
-  const io = {
-    regexp: /\/notify$/,
-    help: 'Notifys',
-    usage: 'Yes',
+export default function(message? : IMsg, matches? : IMatchesList) : IOutput {
+  const io : IOutput = {
+    regexp: /\/greet$/,
+    help: 'Just say /greet',
+    usage: 'Just say /greet',
     output: 'Hello',
   };
 
@@ -14,3 +14,4 @@ export default function Notify(message? : IMsg, matches? : IMatchesList) : IOutp
 
   return io;
 }
+

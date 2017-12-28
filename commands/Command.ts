@@ -1,3 +1,4 @@
+// Legacy
 export default class Command {
   public command : RegExp;
   public help : string[];
@@ -24,4 +25,11 @@ export default class Command {
   public joinHelp?() : string { return this.help.join('\n'); }
   public joinUsage?() : string { return this.usage.join('\n'); }
   public joinOutput?() : string { return this.output.join('\n'); }
+}
+
+export interface ICommand {
+  regexp : RegExp;
+  help : string[] | string;
+  usage : string[] | string;
+  output : string[] | string;
 }

@@ -1,9 +1,10 @@
 import * as TelegramBot from "node-telegram-bot-api";
-import * as commandList from "./commandList";
+import * as commands from "./commands";
 import { config } from "./config";
+import { IMatchesList, IMsg, IOutput } from "./helpers/interfaces";
 
 // Startup
-Promise.all(commandList.startupTasks).then(values => {
+Promise.all(commands.startupTasks).then(values => {
   console.log(`promise: [${values}]`);
 }).catch(error => {
   console.log(error);
@@ -18,20 +19,28 @@ const bot : TelegramBot = new TelegramBot(
 );
 
 // Iterate through commands
-for (const command of commandList.commandList) {
+for (const command of commands.commandList) {
+  const initialCommandData = command();
+
   // Create listeners for commands
-  bot.onText(command, (msg, matches) => {
+  bot.onText(command.regexp, (msg, matches) => {
     const match : string = matches[1];
     const chatId : number = msg.chat.id;
 
+    const IMessage : IMsg = msg;
+    const IMatches : IMatchesList = matches as IMatchesList;
+
     // Execute the command
-    command.exec(match, chatId);
+    command(msg, matches);
 
     // Send return message if there is something to send
     if(command.output.length > 0) {
+      console.log(msg);
+      console.log(matches);
+
       bot.sendMessage(
           chatId,
-          command.joinOutput(),
+          command.output,
           config.messageOptions
       )
       .catch(errorHandling);

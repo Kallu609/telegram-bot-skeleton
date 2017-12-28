@@ -1,3 +1,5 @@
+import { config } from "../config";
+
 export function parseArgs(matches : any[]) : string[] {
   if(matches && matches[1]) {
     const argsVar : string = matches[1];
@@ -7,3 +9,8 @@ export function parseArgs(matches : any[]) : string[] {
   const array : string[] = [];
   return array;
 }
+
+export function errorHandling(error : string) : void {
+  console.log(config.consoleStyle, error);  
+}
+  

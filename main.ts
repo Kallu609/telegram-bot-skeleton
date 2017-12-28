@@ -2,12 +2,13 @@ import * as TelegramBot from 'node-telegram-bot-api';
 import { getCommands, getStartupTasks } from './command';
 import { config } from './config';
 import { IMatchesList, IMsg, IOutput } from './helpers/interface';
+import { errorHandling } from './helpers/message';
 
 // Startup
 Promise.all(getStartupTasks())
 .catch(errorHandling);
 
-console.log(config.consoleStyle, 'Initializing the bot');
+errorHandling('Initializing the bot');
 
 // Bot
 const bot : TelegramBot = new TelegramBot(
@@ -26,8 +27,3 @@ for (const command of getCommands(bot)) {
 // Error handling
 bot.on('polling_error', errorHandling);
 bot.on('webhook_error', errorHandling);
-
-function errorHandling(error) {
-  console.log(config.consoleStyle, error);  
-}
-  

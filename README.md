@@ -20,6 +20,7 @@ Type /help for list of commands
 
 ## Installation
 
-Insert Telegram bot API key in config.js, then:
+Rename config-example.ts to config.ts
+Insert Telegram bot API key in config.ts, then:
 
     $ todo..

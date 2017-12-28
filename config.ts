@@ -9,7 +9,7 @@ export const config : IConfig = {
  * Telegram bot token
  *  Can be acquired from BotFather
  */
-  telegramToken : '479950408:AAEAnfw7wEkKmQRCCAEWWYdG4qLaGJPMNxo',
+  telegramToken : '',
 
 /*
  * Api URL:s

@@ -45,7 +45,11 @@ export default function(bot) : ICommand {
       // Example /notify btc >15000 eur
       } else if(args.length === 3) {
         // add notification
-        return addNotification(bot, msg, matches).then(() => {
+        return addNotification(bot, msg, matches)
+        .then((response) => {
+          showNotification(bot, response);
+        })
+        .then(() => {
           bot.sendMessage(msg.chat.id, 'Added new notification!\n\n', config.messageOptions);
         });
       }
@@ -80,10 +84,9 @@ function addNotification(bot : TelegramBot, msg : IMsg, matches : any[]) : Promi
     };
 
     data.notifications.push(notification);
-    return checkNotifications();
   }
   
-  return Promise.resolve();
+  return checkNotifications();
 }
 
 // Get notifications by chat id
@@ -106,11 +109,9 @@ function getNotifications(chatId : number) : INotification[] {
 export function startNotifier(bot : TelegramBot) : Promise<any> {
   return interval(
     async () => {
-      await checkNotifications().then(
-        (response: ICheckNotification[]) => {
+      await checkNotifications().then((response) => {
           showNotification(bot, response);
-        }
-      );
+      });
 
       await writeData();
     },
@@ -122,8 +123,6 @@ export function startNotifier(bot : TelegramBot) : Promise<any> {
 // Print notifications from notifier
 function showNotification(bot : TelegramBot, notificationData : ICheckNotification[]) : void {
   notificationData.forEach((n) => {
-    console.log(n.notification.chatId + " wat");
-
     const overOrUnder = (n.notification.comparator === '>') ? 'over' : 'under';
   
     return bot.sendMessage(
@@ -153,13 +152,11 @@ function checkNotifications() : Promise<any> {
         (notification.comparator === '>' && currentRate > notification.rate) ||
         (notification.comparator === '<' && currentRate < notification.rate)
       ) {
-        console.log(notification.chatId);
-
         neededNotifications.push({ notification, currentRate });
         object.splice(index, 1);
       }
     });
-
+    
     // Return ICheckNotifications[] for then
     return neededNotifications;
   }).catch(error => {

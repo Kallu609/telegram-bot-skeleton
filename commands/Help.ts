@@ -13,7 +13,7 @@ export default function(bot) : ICommand {
       let message = '*The following commands are available:*\n';
       
       for (const command of getCommands(bot)) {
-        message += (`${command.usage} - ${command.help}\n`);
+        message += (`${command.usage}\n_${command.help}_\n\n`);
       }
 
       bot.sendMessage(msg.chat.id, message, config.messageOptions);

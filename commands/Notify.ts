@@ -11,6 +11,7 @@ import { errorHandling, parseArgs } from '../helpers/message';
 export default function(bot) : ICommand {
   return {
     regexp: /\/notify[ ]?(.*)$/,
+    name: 'notify',
     help: 'Notifies you when cryptocurrency\'s rate is over / under set value',
     usage: '/notify <crypto> <comparator><amount> <currency>\n' +
            '/notify clear\n' +

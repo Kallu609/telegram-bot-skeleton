@@ -30,6 +30,7 @@ export interface IOutput {
 
 export interface ICommand {
   regexp: RegExp;
+  name: string;
   help: string;
   usage: string;
 

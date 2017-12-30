@@ -13,6 +13,7 @@ const currenciesToShow = ['USD', 'EUR'];
 export default function(bot) : ICommand {
   return {
     regexp: /\/crypto[ ]?(.*)$/,
+    name: 'crypto',
     help: 'Displays various crypto currencies\' exchange rate',
     usage: ['/crypto', '/crypto <currency>', '/crypto <amount> <from> to <to>'].join('\n'),
 

@@ -74,18 +74,12 @@ function parseData(response, value : string = '1') : string {
   if (!response) {
     return;
   }
+  
+  return Object.keys(response.data).map(x => {
+    return Object.keys(response.data[x]).map(i => {
+      const finalValue : number = parseFloat(value) * parseFloat(response.data[x][i]);
 
-  let result = '';
-
-  Object.keys(response.data).forEach(crypto => {
-    Object.keys(response.data[crypto]).forEach(currency => {
-      const finalValue : number = parseFloat(value) * parseFloat(response.data[crypto][currency]);
-
-      result += `*${value} ${crypto}* to *${currency}*: \`${finalValue.toFixed(2)}\`\n`;
-    });
-    
-    result += '\n';
-  });
-
-  return result;
+      return `*${value} ${x}* to *${i}*: \`${finalValue.toFixed(2)}\``;
+    }).join('\n');
+  }).join('\n\n');
 }

@@ -6,6 +6,7 @@ import * as messageHelper from '../helpers/message';
 export default function(bot) : ICommand {
   return {
     regexp: /\/greet$/,
+    name: 'greet',
     help: 'Basic example command for demonstrating purposes',
     usage: '/greet',
 

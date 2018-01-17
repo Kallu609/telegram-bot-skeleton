@@ -11,11 +11,11 @@ import { errorHandling, parseArgs } from '../helpers/message';
 export default function(bot) : ICommand {
   return {
     regexp: /\/notify[ ]?(.*)$/,
-    help: 'needs to be implemented',
+    name: 'notify',
+    help: 'Notifies you when cryptocurrency\'s rate is over / under set value',
     usage: '/notify <crypto> <comparator><amount> <currency>\n' +
            '/notify clear\n' +
-           '/notify\n\n' +
-           '*Example:* /notify btc >150 eur\n\n',
+           '/notify',
 
     handler: ({msg, matches}) => {
       const args = parseArgs(matches);
@@ -48,9 +48,6 @@ export default function(bot) : ICommand {
         return addNotification(bot, msg, matches)
         .then((response) => {
           showNotification(bot, response);
-        })
-        .then(() => {
-          bot.sendMessage(msg.chat.id, 'Added new notification!\n\n', config.messageOptions);
         });
       }
 
@@ -86,6 +83,8 @@ function addNotification(bot : TelegramBot, msg : IMsg, matches : any[]) : Promi
     data.notifications.push(notification);
   }
   
+  bot.sendMessage(msg.chat.id, 'Added new notification!', config.messageOptions);
+
   return checkNotifications();
 }
 
@@ -128,7 +127,7 @@ function showNotification(bot : TelegramBot, notificationData : ICheckNotificati
     return bot.sendMessage(
       n.notification.chatId,
       `*1 ${n.notification.crypto}* is now ${overOrUnder} *${n.notification.rate} ${n.notification.currency}*\n\n` +
-      `*1 ${n.notification.crypto}:* ${n.currentRate} ${n.notification.currency}`,
+      `*1 ${n.notification.crypto}:* \`${n.currentRate} ${n.notification.currency}\``,
       config.messageOptions
     );
   });

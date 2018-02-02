@@ -13,7 +13,9 @@ const bot : TelegramBot = new TelegramBot(
 );
 
 // Startup
-Promise.all(getStartupTasks(bot))
+Promise.all(getStartupTasks(bot)).then(() => {
+  errorHandling('Bot initialized');
+})
 .catch(errorHandling);
 
 // Iterate through commands

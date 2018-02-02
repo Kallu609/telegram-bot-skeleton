@@ -1,4 +1,4 @@
-import * as fs from 'file-system';
+import * as fs from 'fs';
 
 /*
  * Datatypes

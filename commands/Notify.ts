@@ -28,39 +28,35 @@ export default function(bot) : ICommand {
         const chatNotifications = getNotifications(msg.chat.id);
         
         if(chatNotifications.length > 0) {
-          chatNotifications.forEach((n) => {
-            message += `${n.crypto} ${n.comparator}${n.rate} ${n.currency}\n`
-          });
+          message += chatNotifications.map(n => {
+            return n.crypto + ' ' + n.comparator + n.rate + ' ' + n.currency;
+          }).join('\n');
         } else {
           message += 'Never\n\nRefer to */help* if needed';
         }
-
-        return bot.sendMessage(msg.chat.id, message, config.messageOptions);
       // Example: /notify clear
       } else if(args.length === 1) {
         if(args[0] === 'clear') {
-          // clear
-          return bot.sendMessage(msg.chat.id, 'Cleared your notifications!', config.messageOptions);
+          // TODO: Clear
+          message = 'Cleared your notifications! _(not implemented)_';
         }
       // Example /notify btc >15000 eur
       } else if(args.length === 3) {
-        // add notification
         return addNotification(bot, msg, matches)
         .then((response) => {
           showNotification(bot, response);
         });
       }
 
-      return bot.sendMessage(msg.chat.id, `Command query not supported.\nConsult */help* if needed`, config.messageOptions);
+      return bot.sendMessage(msg.chat.id, message, config.messageOptions);
     }
   }
 }
 
-function addNotification(bot : TelegramBot, msg : IMsg, matches : any[]) : Promise<any> {
-  const args = parseArgs(matches);
-
+function addNotification(bot : TelegramBot, msg : IMsg, args : string[]) : Promise<any> {
   const crypto = args[0].toUpperCase();
   const comparator = args[1][0];
+
   const rate : number = parseFloat(parseFloat(args[1].slice(1)).toFixed(2)); // Slice removes < or > if there's any, todo: FIX THIS
   const currency = args[2].toUpperCase();
 
@@ -90,16 +86,9 @@ function addNotification(bot : TelegramBot, msg : IMsg, matches : any[]) : Promi
 
 // Get notifications by chat id
 function getNotifications(chatId : number) : INotification[] {
-  const notifications = data.notifications;
-  const neededNotifications : INotification[] = [];
-
-  notifications.forEach((notification : INotification, index, object) => {
-    if(notification.chatId === chatId) {
-      neededNotifications.push(notification);
-    }
+  return data.notifications.filter((notification : INotification) => {
+    return notification.chatId === chatId;
   });
-
-  return neededNotifications;
 }
 
 /*

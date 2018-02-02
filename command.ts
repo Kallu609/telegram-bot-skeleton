@@ -6,6 +6,7 @@ import Crypto from './commands/Crypto';
 import Greeter from './commands/Greeter';
 import Help from './commands/Help';
 import Notify, * as Notifier from './commands/Notify';
+import Remind, * as Reminder from './commands/Remind';
 
 // Commands
 export function getCommands(bot : TelegramBot) : ICommand[] {
@@ -14,6 +15,7 @@ export function getCommands(bot : TelegramBot) : ICommand[] {
     Notify(bot),
     Crypto(bot),
     Help(bot),
+    Remind(bot),
   ]
 }
 
@@ -22,5 +24,6 @@ export function getStartupTasks(bot : TelegramBot) : Array<Promise<any>> {
   return [
     apiHelper.fetchCrypto(),
     Notifier.startNotifier(bot),
+    Reminder.startReminder(bot),
   ];
 }

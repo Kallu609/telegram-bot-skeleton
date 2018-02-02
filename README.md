@@ -11,7 +11,7 @@ Easily expandable and modifiable Typescript Telegram bot. Works on top of [node-
 * Notifies when cryptocurrency's rate is over / under set value
   * `/notify btc >5000 eur`
 * Reminds of a message reply
-  * <reply>
+  * [reply]
   `/remind 1 day`
 * Easy to add new commands
 

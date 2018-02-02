@@ -1,11 +1,19 @@
 import axios from 'axios';
+import * as fs from 'fs';
 import * as interval from 'interval-promise';
 import * as TelegramBot from 'node-telegram-bot-api';
+import { promisify } from 'util';
 import { config } from '../config';
-import { buildApiUrl, isNumber } from '../helpers/api';
-import { data, ICryptos, INotification, writeData } from '../helpers/database';
+import * as apiHelper from '../helpers/api';
 import { ICommand, IMsg } from '../helpers/interface';
 import { errorHandling, parseArgs } from '../helpers/message';
+
+const notifyConfig = {
+  /*
+   * Database location
+   */
+  datafile : './data/notifications.json',
+}
 
 /* Notify command functionality */
 export default function(bot) : ICommand {
@@ -14,38 +22,51 @@ export default function(bot) : ICommand {
     name: 'notify',
     help: 'Notifies you when cryptocurrency\'s rate is over / under set value',
     usage: '/notify <crypto> <comparator><amount> <currency>\n' +
-           '/notify clear\n' +
            '/notify',
 
-    handler: ({msg, matches}) => {
+    handler: async ({msg, matches}) => {
       const args = parseArgs(matches);
       let message = `Command query not supported.\nRefer to */help* if needed`;
 
-      // Example: /notify
       if(args.length === 0) {
         message = '*Currently notifying when:*\n';
 
-        const chatNotifications = getNotifications(msg.chat.id);
+        const data = await getData();
+        const chatNotifications = data.notifications[msg.chat.id];
         
-        if(chatNotifications.length > 0) {
+        if(chatNotifications) {
           message += chatNotifications.map(n => {
             return n.crypto + ' ' + n.comparator + n.rate + ' ' + n.currency;
           }).join('\n');
         } else {
           message += 'Never\n\nRefer to */help* if needed';
         }
-      // Example: /notify clear
-      } else if(args.length === 1) {
-        if(args[0] === 'clear') {
-          // TODO: Clear
-          message = 'Cleared your notifications! _(not implemented)_';
-        }
-      // Example /notify btc >15000 eur
       } else if(args.length === 3) {
-        return addNotification(bot, msg, matches)
-        .then((response) => {
-          showNotification(bot, response);
-        });
+        // 1             | 2          | 3              | 4
+        // 2 - 5 letters | comparator | 1 - 10 numbers | 2 - 5 letters
+        const regex = /^(\w{2,5})([><])(\d{1,10})(\w{2,5})$/gi.exec(args.join(''));
+
+        if(regex) {
+          const cryptos = await apiHelper.getCryptos();
+
+          const userId = msg.from.id;
+          const crypto = regex[1].toUpperCase();
+          const comparator = regex[2];
+          const rate = Number(regex[3]);
+          const currency = regex[4].toUpperCase();
+
+          if(!cryptos.cryptoCurrencies.includes(crypto)) {
+            message = 'Your crypto is not currently supported.';
+          } else if(!cryptos.fiatCurrencies.includes(currency)) {
+            message = 'Your currency is not currently supported.';
+          } else {
+            const notification : INotification = { userId, crypto, comparator, rate, currency, };
+  
+            addNotification(msg.chat.id, notification);
+  
+            message = `Notification added for **${crypto}**`;
+          }
+        }
       }
 
       return bot.sendMessage(msg.chat.id, message, config.messageOptions);
@@ -53,135 +74,113 @@ export default function(bot) : ICommand {
   }
 }
 
-function addNotification(bot : TelegramBot, msg : IMsg, args : string[]) : Promise<any> {
-  const crypto = args[0].toUpperCase();
-  const comparator = args[1][0];
+interface INotification {
+  userId : number;
+  crypto : string;
+  comparator : string;
+  rate : number;
+  currency : string;
+}
 
-  const rate : number = parseFloat(parseFloat(args[1].slice(1)).toFixed(2)); // Slice removes < or > if there's any, todo: FIX THIS
-  const currency = args[2].toUpperCase();
+interface INotifyData {
+  cryptoCurrencies : string[];
+  fiatCurrencies : string[];
+  notifications : {
+    [key: string]: INotification[];
+  };
+}
 
-  // Add new notification if values are valid
-  if (
-    ['>', '<'].includes(comparator) &&
-    data.cryptoCurrencies.includes(crypto) &&
-    data.allCurrencies.includes(currency) &&
-    isNumber(rate)
-  ) {
-    const notification : INotification = {
-      chatId: msg.chat.id,
-      userId: msg.from.id,
-      crypto,
-      comparator,
-      rate,
-      currency
+async function getData() : Promise<INotifyData> {
+  const readFile = promisify(fs.readFile);
+  
+  try {
+    const data = await readFile(notifyConfig.datafile, 'utf8');
+    return JSON.parse(data);
+  } catch {
+    return {
+      cryptoCurrencies : [],
+      fiatCurrencies : [],
+      notifications : {},
     };
-
-    data.notifications.push(notification);
   }
-  
-  bot.sendMessage(msg.chat.id, 'Added new notification!', config.messageOptions);
-
-  return checkNotifications();
 }
 
-// Get notifications by chat id
-function getNotifications(chatId : number) : INotification[] {
-  return data.notifications.filter((notification : INotification) => {
-    return notification.chatId === chatId;
+async function addNotification(chatId : number, notification? : INotification, notifications? : INotification[]) : Promise<void> {
+  const newData : INotifyData = await getData();
+
+  if(newData.hasOwnProperty(chatId)) {
+    newData.notifications[chatId].push(notification);
+  } else {
+    newData.notifications[chatId] = [notification];
+  }
+
+  if(!newData.cryptoCurrencies.includes(notification.crypto)) {
+    newData.cryptoCurrencies.push(notification.crypto);
+  }
+  if(!newData.fiatCurrencies.includes(notification.currency)) {
+    newData.fiatCurrencies.push(notification.currency);
+  }
+
+  fs.writeFile(notifyConfig.datafile, JSON.stringify(newData), err => {
+    if(err) {
+      errorHandling(err);
+    }
   });
 }
 
-/*
- * Notifier functionality
- */
-export function startNotifier(bot : TelegramBot) : Promise<any> {
-  return interval(
-    async () => {
-      await checkNotifications().then((response) => {
-          showNotification(bot, response);
-      });
+async function updateNotifications(chatId : string, notifications : INotification[]) {
+  const newData : INotifyData = await getData();
 
-      await writeData();
-    },
-    10000,
-    { stopOnError: false }
-  );
-}
+  newData.notifications[chatId] = notifications;
 
-// Print notifications from notifier
-function showNotification(bot : TelegramBot, notificationData : ICheckNotification[]) : void {
-  notificationData.forEach((n) => {
-    const overOrUnder = (n.notification.comparator === '>') ? 'over' : 'under';
-  
-    return bot.sendMessage(
-      n.notification.chatId,
-      `*1 ${n.notification.crypto}* is now ${overOrUnder} *${n.notification.rate} ${n.notification.currency}*\n\n` +
-      `*1 ${n.notification.crypto}:* \`${n.currentRate} ${n.notification.currency}\``,
-      config.messageOptions
-    );
+  fs.writeFile(notifyConfig.datafile, JSON.stringify(newData), err => {
+    if(err) {
+      errorHandling(err);
+    }
   });
 }
 
-interface ICheckNotification {
-  notification: INotification;
-  currentRate: number;
-}
+async function notify(bot : TelegramBot) {
+  const data = await getData();
+  const getCryptoValues = await axios.get(apiHelper.buildApiUrl(data.cryptoCurrencies, data.fiatCurrencies));
 
-function checkNotifications() : Promise<any> {
-  return getRequiredCurrencies().then(response => {
-    // Notifications we need to be notifying
-    const neededNotifications : ICheckNotification[] = [];
+  for(const chatId of Object.keys(data.notifications)) {
+    let hasChanged = false;
 
-    // Iterate through all notifications to know what we need
-    data.notifications.forEach((notification : INotification, index, object) => {
-      const currentRate : number = response.data[notification.crypto][notification.currency].toFixed(2);
-      
+    const newData = data.notifications[chatId].filter((notification) => {
+      const currentRate : number = getCryptoValues.data[notification.crypto][notification.currency];
+
       if(
         (notification.comparator === '>' && currentRate > notification.rate) ||
         (notification.comparator === '<' && currentRate < notification.rate)
       ) {
-        neededNotifications.push({ notification, currentRate });
-        object.splice(index, 1);
+        hasChanged = true;
+
+        bot.sendMessage(
+          chatId,
+
+          `*1 ${notification.crypto}* is now ${notification.comparator} *${notification.rate} ${notification.currency}*\n\n` + 
+          `*1 ${notification.crypto}:* \`${currentRate} ${notification.currency}\``,
+
+          config.messageOptions,
+        );
+        return false;
       }
+      return true;
     });
-    
-    // Return ICheckNotifications[] for then
-    return neededNotifications;
-  }).catch(error => {
-    errorHandling(error);
-  });
-}
 
-// Creates the API call
-function getRequiredCurrencies() : Promise<any> {
-  const notifications = data.notifications;
-
-  // Check existing notifications to check what values we need from the API
-  let cryptoCurrenciesToFetch : string[] = [];
-  let currenciesToFetch : string[] = [];
-
-  ({cryptoCurrenciesToFetch, currenciesToFetch} = getExistingCurrencies(notifications));
-
-  return axios.get(buildApiUrl(cryptoCurrenciesToFetch, currenciesToFetch));
-}
-
-interface IExistingCurrencies {
-  cryptoCurrenciesToFetch: string[];
-  currenciesToFetch: string[];
-}
-
-function getExistingCurrencies(notifications : INotification[]) : IExistingCurrencies {
-  const cryptoCurrenciesToFetch : string[] = [];
-  const currenciesToFetch : string[] = [];
-
-  for(const notification of notifications) {
-    if (!cryptoCurrenciesToFetch.includes(notification.crypto)) {
-      cryptoCurrenciesToFetch.push(notification.crypto);
-    }
-    if (!currenciesToFetch.includes(notification.currency)) {
-      currenciesToFetch.push(notification.currency);
+    if(hasChanged) {
+      updateNotifications(chatId, newData);
     }
   }
+}
 
-  return { cryptoCurrenciesToFetch, currenciesToFetch };
+export function startNotifier(bot : TelegramBot) : Promise<any> {
+  return interval(
+    async () => {
+      await notify(bot)
+    },
+    10000,
+    { stopOnError: false }
+  );
 }

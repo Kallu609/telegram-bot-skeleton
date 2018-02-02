@@ -8,14 +8,20 @@ import { config } from '../config';
 import { ICommand, IMsg } from '../helpers/interface';
 import * as messageHelper from '../helpers/message';
 
-const datafile = './data/reminder.json';
+const remindConfig = {
+  /*
+   * Database location
+   */
+
+  datafile : './data/reminder.json',
+}
 
 export default function(bot) : ICommand {
   return {
     regexp: /[\/]?remind (.+)$/,
     name: 'remind',
     help: 'Quote the message you want to be reminded of',
-    usage: 'remind [duration]',
+    usage: '/remind [duration]',
 
     handler: ({msg, matches}) => { // Not necessary to include all parameters
       const args = messageHelper.parseArgs(matches); // You can use messageHelper to parse arguments
@@ -72,9 +78,9 @@ function addReminders(msg : IMsg, targetMs : number) : Promise<void> {
       targetMs,
     });
 
-    fs.writeFile(datafile, JSON.stringify(newdata), (err) => {
+    fs.writeFile(remindConfig.datafile, JSON.stringify(newdata), (err) => {
       if(err) {
-        messageHelper.errorHandling(datafile + ' could not be written');
+        messageHelper.errorHandling(remindConfig.datafile + ' could not be written');
       }
     });
   });
@@ -86,9 +92,9 @@ function removeReminders(time : number) {
       return reminder.targetMs > time;
     });
 
-    fs.writeFile(datafile, JSON.stringify(newdata), (err) => {
+    fs.writeFile(remindConfig.datafile, JSON.stringify(newdata), (err) => {
       if(err) {
-        messageHelper.errorHandling(datafile + ' could not be written');
+        messageHelper.errorHandling(remindConfig.datafile + ' could not be written');
       }
     });
   });
@@ -98,7 +104,7 @@ async function getReminders() : Promise<IReminderData[]> {
   const readFile = promisify(fs.readFile);
 
   try {
-    const data = await readFile(datafile, 'utf8');
+    const data = await readFile(remindConfig.datafile, 'utf8');
     return JSON.parse(data);
   } catch {
     return [];

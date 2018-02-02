@@ -10,6 +10,7 @@
     "file-system": "^2.2.2",
     "interval-promise": "^1.1.0",
     "node-telegram-bot-api": "^0.30.0",
+    "parse-duration": "^0.1.1",
     "typescript": "^2.6.2"
   },
   "scripts": {

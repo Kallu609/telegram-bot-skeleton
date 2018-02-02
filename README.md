@@ -5,8 +5,14 @@ Easily expandable and modifiable Typescript Telegram bot. Works on top of [node-
 ## Features
 
 * Fetching the current cryptocurrency conversion rates
+  * `/crypto`
 * Calculate cryptocurrencies rate compared to real currency (EUR, USD, GBP)
-* Notify when cryptocurrency's rate is over / under set value
+  * `/crypto btc`, `/crypto 1 btc to usd`
+* Notifies when cryptocurrency's rate is over / under set value
+  * `/notify btc >5000 eur`
+* Reminds of a message reply
+  * <reply>
+  `/remind 1 day`
 * Easy to add new commands
 
 Type /help for list of commands

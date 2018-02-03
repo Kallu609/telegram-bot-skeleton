@@ -3,6 +3,7 @@ import * as interval from 'interval-promise';
 import * as moment from 'moment';
 import * as TelegramBot from 'node-telegram-bot-api';
 import * as parse from 'parse-duration';
+import * as redis from 'redis';
 import { promisify } from 'util';
 import { config } from '../config';
 import { ICommand, IMsg } from '../helpers/interface';
@@ -12,8 +13,10 @@ const remindConfig = {
   /*
    * Database location
    */
-  datafile : './data/reminder.json',
+  redisDatakey : 'reminders',
 }
+
+const client = redis.createClient(process.env.REDIS_URL);
 
 export default function(bot) : ICommand {
   return {
@@ -77,36 +80,26 @@ async function addReminders(msg : IMsg, targetMs : number) : Promise<void> {
     targetMs,
   });
 
-  fs.writeFile(remindConfig.datafile, JSON.stringify(newdata), (err) => {
-    if(err) {
-      messageHelper.errorHandling(remindConfig.datafile + ' could not be written');
-    }
-  });
+  client.set(remindConfig.redisDatakey, JSON.stringify(newdata));
 }
 
 async function removeReminders(time : number) {
-  const newdata = await getReminders();
-  
-  newdata.filter(reminder => {
+  const data = await getReminders();
+  const newdata = data.filter(reminder => {
     return reminder.targetMs > time;
   });
 
-  fs.writeFile(remindConfig.datafile, JSON.stringify(newdata), (err) => {
-    if(err) {
-      messageHelper.errorHandling(remindConfig.datafile + ' could not be written');
-    }
-  });
+  client.set(remindConfig.redisDatakey, JSON.stringify(newdata));
 }
 
 async function getReminders() : Promise<IReminderData[]> {
-  const readFile = promisify(fs.readFile);
+  const get = promisify(client.get).bind(client);
+  const data : string = await get(remindConfig.redisDatakey);
 
-  try {
-    const data = await readFile(remindConfig.datafile, 'utf8');
+  if(data) {
     return JSON.parse(data);
-  } catch {
-    return [];
   }
+  return [];
 }
 
 async function remind(bot : TelegramBot) {

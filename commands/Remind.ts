@@ -12,7 +12,6 @@ const remindConfig = {
   /*
    * Database location
    */
-
   datafile : './data/reminder.json',
 }
 
@@ -62,41 +61,40 @@ interface IReminderData {
   targetMs : number,
 }
 
-function addReminders(msg : IMsg, targetMs : number) : Promise<void> {
-  return getReminders().then(data => {
-    const newdata = data;
+async function addReminders(msg : IMsg, targetMs : number) : Promise<void> {
+  const newdata = await getReminders();
 
-    const chatId = msg.chat.id;
-    const userId = msg.from.id;
-    const userName = msg.from.first_name;
-    const replyMessageId = msg.reply_to_message.message_id;
-    newdata.push({
-      chatId,
-      userId,
-      userName,
-      replyMessageId,
-      targetMs,
-    });
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const userName = msg.from.first_name;
+  const replyMessageId = msg.reply_to_message.message_id;
 
-    fs.writeFile(remindConfig.datafile, JSON.stringify(newdata), (err) => {
-      if(err) {
-        messageHelper.errorHandling(remindConfig.datafile + ' could not be written');
-      }
-    });
+  newdata.push({
+    chatId,
+    userId,
+    userName,
+    replyMessageId,
+    targetMs,
+  });
+
+  fs.writeFile(remindConfig.datafile, JSON.stringify(newdata), (err) => {
+    if(err) {
+      messageHelper.errorHandling(remindConfig.datafile + ' could not be written');
+    }
   });
 }
 
-function removeReminders(time : number) {
-  return getReminders().then(data => {
-    const newdata = data.filter(reminder => {
-      return reminder.targetMs > time;
-    });
+async function removeReminders(time : number) {
+  const newdata = await getReminders();
+  
+  newdata.filter(reminder => {
+    return reminder.targetMs > time;
+  });
 
-    fs.writeFile(remindConfig.datafile, JSON.stringify(newdata), (err) => {
-      if(err) {
-        messageHelper.errorHandling(remindConfig.datafile + ' could not be written');
-      }
-    });
+  fs.writeFile(remindConfig.datafile, JSON.stringify(newdata), (err) => {
+    if(err) {
+      messageHelper.errorHandling(remindConfig.datafile + ' could not be written');
+    }
   });
 }
 
@@ -111,22 +109,22 @@ async function getReminders() : Promise<IReminderData[]> {
   }
 }
 
-function remind(bot : TelegramBot) {
-  getReminders().then(data => {
-    const currentTime = moment().valueOf();
+async function remind(bot : TelegramBot) {
+  const data = await getReminders();
+  
+  const currentTime = moment().valueOf();
 
-    for(const reminder of data) {
-      if(reminder.targetMs <= currentTime) {
-        bot.sendMessage(
-          reminder.chatId,
-          `[@${reminder.userName}](tg://user?id=${reminder.userId}), here's your reminder!`,
-          { reply_to_message_id : reminder.replyMessageId, ...config.messageOptions },
-        );
-      }
+  for(const reminder of data) {
+    if(reminder.targetMs <= currentTime) {
+      bot.sendMessage(
+        reminder.chatId,
+        `[@${reminder.userName}](tg://user?id=${reminder.userId}), here's your reminder!`,
+        { reply_to_message_id : reminder.replyMessageId, ...config.messageOptions },
+      );
     }
+  }
 
-    removeReminders(currentTime);
-  });
+  removeReminders(currentTime);
 }
 
 export function startReminder(bot : TelegramBot) : Promise<any> {

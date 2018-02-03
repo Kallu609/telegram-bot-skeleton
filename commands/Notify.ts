@@ -1,19 +1,22 @@
 import axios from 'axios';
-import * as fs from 'fs';
 import * as interval from 'interval-promise';
 import * as TelegramBot from 'node-telegram-bot-api';
+import * as redis from 'redis';
 import { promisify } from 'util';
 import { config } from '../config';
 import * as apiHelper from '../helpers/api';
 import { ICommand, IMsg } from '../helpers/interface';
-import { errorHandling, parseArgs } from '../helpers/message';
+import * as messageHelper from '../helpers/message';
 
 const notifyConfig = {
   /*
    * Database location
    */
   datafile : './data/notifications.json',
+  redisDatakey : 'notifications',
 }
+
+const client = redis.createClient(process.env.REDIS_URL);
 
 /* Notify command functionality */
 export default function(bot) : ICommand {
@@ -25,7 +28,7 @@ export default function(bot) : ICommand {
            '/notify',
 
     handler: async ({msg, matches}) => {
-      const args = parseArgs(matches);
+      const args = messageHelper.parseArgs(matches);
       let message = `Command query not supported.\nRefer to */help* if needed`;
 
       if(args.length === 0) {
@@ -91,17 +94,17 @@ interface INotifyData {
 }
 
 async function getData() : Promise<INotifyData> {
-  const readFile = promisify(fs.readFile);
-  
-  try {
-    const data = await readFile(notifyConfig.datafile, 'utf8');
+  const get = promisify(client.get).bind(client);
+  const data : string = await get(notifyConfig.redisDatakey);
+
+  if(data) {
     return JSON.parse(data);
-  } catch {
+  } else {
     return {
       cryptoCurrencies : [],
       fiatCurrencies : [],
       notifications : {},
-    };
+    }
   }
 }
 
@@ -121,11 +124,11 @@ async function addNotification(chatId : number, notification? : INotification, n
     newData.fiatCurrencies.push(notification.currency);
   }
 
-  fs.writeFile(notifyConfig.datafile, JSON.stringify(newData), err => {
-    if(err) {
-      errorHandling(err);
-    }
-  });
+  try {
+    client.set(notifyConfig.redisDatakey, JSON.stringify(newData));
+  } catch(e) {
+    messageHelper.errorHandling(e);
+  }
 }
 
 async function updateNotifications(chatId : string, notifications : INotification[]) {
@@ -133,11 +136,11 @@ async function updateNotifications(chatId : string, notifications : INotificatio
 
   newData.notifications[chatId] = notifications;
 
-  fs.writeFile(notifyConfig.datafile, JSON.stringify(newData), err => {
-    if(err) {
-      errorHandling(err);
-    }
-  });
+  try {
+    client.set(notifyConfig.redisDatakey, JSON.stringify(newData));
+  } catch(e) {
+    messageHelper.errorHandling(e);
+  }
 }
 
 async function notify(bot : TelegramBot) {

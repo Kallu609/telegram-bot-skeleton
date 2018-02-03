@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as interval from 'interval-promise';
 import * as moment from 'moment';
 import * as TelegramBot from 'node-telegram-bot-api';

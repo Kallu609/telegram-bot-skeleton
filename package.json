@@ -4,6 +4,7 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
+    "@types/redis": "^2.8.5",
     "axios": "^0.17.1",
     "bot-brother": "^2.1.5",
     "eslint-config-airbnb": "^16.1.0",
@@ -11,6 +12,7 @@
     "moment": "^2.20.1",
     "node-telegram-bot-api": "^0.30.0",
     "parse-duration": "^0.1.1",
+    "redis": "^2.8.0",
     "ts-node": "^4.1.0",
     "typescript": "^2.6.2"
   },

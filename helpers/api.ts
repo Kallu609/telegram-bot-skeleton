@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as fs from 'fs';
 import * as interval from 'interval-promise';
+import * as redis from 'redis';
 import { promisify } from 'util';
 import { config } from '../config';
 import * as messageHelper from './message';
@@ -22,20 +23,14 @@ const apiConfig = {
   /*
   * Currency data file
   */
-  dataFile : './data/api.json',
+  redisDatakey : 'api',
 };
 
-/*
- * Builds API url
- * Supports arrays and strings as parameters
- */
+const client = redis.createClient(process.env.REDIS_URL);
+
 export function buildApiUrl (fromCurrency : string[], toCurrency : string[]) : string {
   return `${apiConfig.apiUrlPrice}?fsyms=${fromCurrency.join(',')}&tsyms=${toCurrency.join(',')}`;
 }
-
-/*
- * Returns all available cryptos from API
- */
 
 export function fetchCrypto() : Promise<any> {
   return interval(
@@ -51,14 +46,15 @@ interface ICryptos {
 }
 
 export async function getCryptos() : Promise<ICryptos> {
-  const readFile = promisify(fs.readFile);
+  const get = promisify(client.get).bind(client);
+  
   const cryptos : ICryptos = {
     cryptoCurrencies : [],
     fiatCurrencies : [],
   };
 
   try {
-    const data = await readFile(apiConfig.dataFile, 'utf8');
+    const data : string = await get(apiConfig.redisDatakey);
     cryptos.cryptoCurrencies = JSON.parse(data).cryptoCurrencies;
     cryptos.fiatCurrencies = apiConfig.supportedCurrencies;
   } catch {
@@ -95,11 +91,11 @@ function writeCryptoes(cryptoCurrencies : ICryptos['cryptoCurrencies']) {
     cryptoCurrencies,
   };
 
-  fs.writeFile(apiConfig.dataFile, JSON.stringify(data), (err) => {
-    if(err) {
-      messageHelper.errorHandling(apiConfig.dataFile + ' could not be written');
-    }
-  });
+  try {
+    client.set(apiConfig.redisDatakey, JSON.stringify(data));
+  } catch {
+    messageHelper.errorHandling(apiConfig.redisDatakey + ' could not be written');
+  }
 }
 
 export function isNumber(num : any) : boolean {

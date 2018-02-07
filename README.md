@@ -1,6 +1,7 @@
 # Telegram Bot Skeleton
 
 Easily expandable and modifiable Typescript Telegram bot. Works on top of [node-telegram-bot-api](https://github.com/yagop/node-telegram-bot-api).
+
 Forked from https://github.com/naftis/tuplabotti
 
 ## Prerequisites

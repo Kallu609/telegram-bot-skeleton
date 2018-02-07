@@ -1,21 +1,7 @@
-# Tuplabotti
+# Telegram Bot Skeleton
 
 Easily expandable and modifiable Typescript Telegram bot. Works on top of [node-telegram-bot-api](https://github.com/yagop/node-telegram-bot-api).
-
-## Features
-
-* Fetching the current cryptocurrency conversion rates
-  * `/crypto`
-* Calculate cryptocurrencies rate compared to real currency (EUR, USD, GBP)
-  * `/crypto btc`, `/crypto 1 btc to usd`
-* Notifies when cryptocurrency's rate is over / under set value
-  * `/notify btc >5000 eur`
-* Reminds of a message reply
-  * [reply]
-  `/remind 1 day`
-* Easy to add new commands
-
-Type /help for list of commands
+Forked from https://github.com/naftis/tuplabotti
 
 ## Prerequisites
 
